@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Telegram Mini App</title>
+    
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        /* 使用 Telegram 提供的 CSS 变量，自动适配用户的深色/浅色主题 */
+        body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+        
+        h2 { margin-top: 10px; }
+        
+        textarea {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            margin-top: 15px;
+            border: 1px solid var(--tg-theme-hint-color, #cccccc);
+            border-radius: 8px;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            color: var(--tg-theme-text-color, #000000);
+            resize: none;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--tg-theme-button-color, #3390ec);
+        }
+
+        button {
+            background-color: var(--tg-theme-button-color, #3390ec);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            padding: 14px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 400px;
+            transition: opacity 0.2s;
+        }
+
+        button:active { opacity: 0.8; }
+        
+        .hint {
+            color: var(--tg-theme-hint-color, #999999);
+            font-size: 14px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h2 id="greeting">正在加载数据...</h2>
+    <p class="hint">请在下方输入框内填写信息，点击发送后数据将回传至您的 Bot。</p>
+    
+    <textarea id="dataInput" rows="5" placeholder="在此输入内容..."></textarea>
+    <button id="sendBtn">发送数据并关闭</button>
+
+    <script>
+        // 1. 初始化 Telegram Web App 对象
+        const tg = window.Telegram.WebApp;
+
+        // 2. 通知 Telegram 客户端 App 已经准备就绪（会消除加载 loading 状态）
+        tg.ready();
+        
+        // 3. 将 Web App 展开为全屏（默认通常是半屏显示）
+        tg.expand();
+
+        // 4. 获取当前操作用户的基本信息
+        const user = tg.initDataUnsafe?.user;
+        const greetingElement = document.getElementById('greeting');
+        
+        if (user) {
+            greetingElement.innerText = `你好, ${user.first_name}!`;
+        } else {
+            greetingElement.innerText = `你好, 外部测试用户!`;
+        }
+
+        // 5. 绑定按钮点击事件：处理逻辑并将数据发回给后端的 Node.js Bot
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const inputValue = document.getElementById('dataInput').value.trim();
+            
+            if (!inputValue) {
+                // 调用 Telegram 原生的警告弹窗，而不是浏览器的 alert()
+                tg.showAlert("输入内容不能为空，请重新输入！");
+                return;
+            }
+
+            // 构造要发送的数据对象
+            const payload = {
+                action: "submit_form",
+                text: inputValue,
+                timestamp: new Date().toISOString()
+            };
+
+            // 注意：tg.sendData() 只能接收字符串格式
+            tg.sendData(JSON.stringify(payload));
+        });
+    </script>
+</body>
+</html>
