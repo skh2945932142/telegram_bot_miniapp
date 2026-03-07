@@ -113,6 +113,26 @@
 
             // 注意：tg.sendData() 只能接收字符串格式
             tg.sendData(JSON.stringify(payload));
+            // 在 index.html 的按钮点击逻辑中添加触觉反馈
+            document.getElementById('sendBtn').addEventListener('click', () => {
+                const inputValue = document.getElementById('dataInput').value.trim();
+
+                if (!inputValue) {
+                    tg.HapticFeedback.notificationOccurred('error'); // 失败震动
+                    tg.showAlert("输入内容不能为空，请重新输入！");
+                    return;
+                }
+
+                tg.HapticFeedback.notificationOccurred('success'); // 成功震动
+
+                const payload = {
+                    action: "submit_form",
+                    text: inputValue,
+                    timestamp: new Date().toISOString()
+                };
+
+                tg.sendData(JSON.stringify(payload));
+            });
         });
     </script>
 </body>
