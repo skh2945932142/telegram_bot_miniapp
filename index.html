@@ -2,317 +2,1213 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>由乃的未来日记</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700;900&family=ZCOOL+QingKe+HuangYou&display=swap" rel="stylesheet">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* --- 核心变量与主题色设定 --- */
-        :root {
-            --yuno-blood-red: #8a0303;
-            --yuno-dark-red: #5a0202;
-            --yuno-red-light: rgba(138, 3, 3, 0.15);
-            --yuno-red-glow: rgba(138, 3, 3, 0.4);
-            
-            /* 兼容 Telegram 原生主题变量 */
-            --bg-color: var(--tg-theme-bg-color, #f7f7f8);
-            --text-color: var(--tg-theme-text-color, #1c1c1e);
-            --hint-color: var(--tg-theme-hint-color, #8e8e93);
-            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
-        }
+/* ════════════════════════════════════════════════════
+   🩸 ROOT VARIABLES
+════════════════════════════════════════════════════ */
+:root {
+    --blood:        #8a0303;
+    --blood-dark:   #5a0202;
+    --blood-deep:   #2a0101;
+    --blood-glow:   rgba(138,3,3,.6);
+    --blood-soft:   rgba(138,3,3,.12);
+    --sakura:       #f9d0d8;
+    --sakura-mid:   #f2aab8;
+    --sakura-deep:  #e07090;
+    --blush:        #fff0f3;
+    --ink:          #2a0a12;
+    --line-color:   rgba(224,112,144,.18);
+    --bg-color:     var(--tg-theme-bg-color,  #fff8f9);
+    --card-bg:      var(--tg-theme-secondary-bg-color, #ffffff);
+    --text-color:   var(--tg-theme-text-color, #2a0a12);
+    --hint-color:   var(--tg-theme-hint-color, #b07080);
+    /* yandere transition */
+    --yandere-progress: 0;
+}
 
-        /* 全局基础设定 */
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            box-sizing: border-box;
-            overflow: hidden; /* 防止小程序整体出现不必要的滚动 */
-        }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            padding: 24px 20px;
-            box-sizing: border-box;
-            overflow-y: auto;
-        }
+html { height: 100%; }
 
-        /* --- 顶部沉浸式标题区 --- */
-        #header {
-            text-align: center;
-            margin-bottom: 30px;
-            animation: fadeInDown 0.8s ease-out;
-        }
-        
-        /* 标题使用衬线体增加日记感，配合微弱的红色呼吸光晕 */
-        h1.diary-title {
-            margin: 0 0 8px 0;
-            font-size: 1.6rem;
-            font-weight: 900;
-            font-family: 'Georgia', 'Times New Roman', serif;
-            color: var(--text-color);
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px var(--yuno-red-light);
-            animation: dangerBreathe 4s ease-in-out infinite;
-        }
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Noto Serif SC','Georgia',serif;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='3' fill='%238a0303'/%3E%3Cline x1='10' y1='0' x2='10' y2='7' stroke='%238a0303' stroke-width='1.5'/%3E%3Cline x1='10' y1='13' x2='10' y2='20' stroke='%238a0303' stroke-width='1.5'/%3E%3Cline x1='0' y1='10' x2='7' y2='10' stroke='%238a0303' stroke-width='1.5'/%3E%3Cline x1='13' y1='10' x2='20' y2='10' stroke='%238a0303' stroke-width='1.5'/%3E%3C/svg%3E") 10 10, crosshair;
+    transition: background-color 0.8s ease, filter 0.8s ease;
+}
 
-        #greeting {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: var(--text-color);
-        }
-        
-        .sub-text {
-            font-size: 0.85rem;
-            color: var(--hint-color);
-            font-style: italic;
-            line-height: 1.4;
-            max-width: 280px;
-            margin: 0 auto;
-        }
+/* ── 日记纸纹理 ── */
+body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            transparent 0px, transparent 31px,
+            var(--line-color) 31px, var(--line-color) 32px
+        ),
+        linear-gradient(
+            to right,
+            transparent 44px, rgba(138,3,3,.2) 44px,
+            rgba(138,3,3,.2) 46px, transparent 46px
+        ),
+        linear-gradient(135deg,#fff8f9 0%,#fef0f3 50%,#fff5f7 100%);
+    pointer-events: none;
+    transition: opacity .8s ease;
+}
 
-        /* --- 情绪标签区 --- */
-        .mood-section {
-            margin-bottom: 24px;
-            animation: fadeInUp 0.8s ease-out 0.2s both;
-        }
-        
-        .mood-title {
-            font-size: 0.95rem;
-            font-weight: bold;
-            margin-bottom: 12px;
-            color: var(--text-color);
-            display: flex;
-            align-items: center;
-        }
-        
-        /* 标题旁边的红色小点缀 */
-        .mood-title::before {
-            content: '';
-            display: inline-block;
-            width: 4px;
-            height: 14px;
-            background-color: var(--yuno-blood-red);
-            margin-right: 8px;
-            border-radius: 2px;
-        }
+/* ── 噪点叠层 ── */
+body::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
+    opacity: .45;
+    pointer-events: none;
+}
 
-        .tags-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+/* ════════════════════════════════════════════════════
+   🌸 HEARTS BACKGROUND
+════════════════════════════════════════════════════ */
+.hearts-bg {
+    position: fixed; inset: 0; z-index: 1;
+    pointer-events: none; overflow: hidden;
+}
+.heart-particle {
+    position: absolute; bottom: -30px;
+    opacity: 0;
+    animation: floatHeart var(--dur,8s) ease-in var(--delay,0s) infinite;
+    color: var(--sakura-deep);
+    transition: color .5s ease;
+}
+@keyframes floatHeart {
+    0%   { opacity:0; transform:translateY(0) rotate(0deg) scale(.6); }
+    10%  { opacity:.55; }
+    80%  { opacity:.25; }
+    100% { opacity:0; transform:translateY(-115vh) rotate(380deg) scale(1.3); }
+}
 
-        /* 修复了无障碍和兼容性警告：改用 button 标签，并加上 -webkit- 前缀 */
-        .mood-tag {
-            padding: 10px 16px;
-            border-radius: 12px;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            font-size: 0.85rem;
-            font-weight: 500;
-            border: 1px solid var(--hint-color);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            cursor: pointer;
-            outline: none;
-            -webkit-user-select: none; /* Safari 兼容 */
-            user-select: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
-            font-family: inherit;
-        }
+/* ════════════════════════════════════════════════════
+   🩸 BLOOD DRIP CANVAS
+════════════════════════════════════════════════════ */
+#bloodCanvas {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 3;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .6s ease;
+}
 
-        /* 标签选中状态 - 由乃的注视 */
-        .mood-tag.active {
-            background-color: var(--yuno-blood-red);
-            color: #ffffff;
-            border-color: var(--yuno-blood-red);
-            box-shadow: 0 4px 12px var(--yuno-red-glow);
-            transform: translateY(-2px);
-        }
+/* ════════════════════════════════════════════════════
+   💀 SCREEN CRACK OVERLAY
+════════════════════════════════════════════════════ */
+#crackOverlay {
+    position: fixed; inset: 0; z-index: 50;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .3s ease;
+}
+#crackOverlay.active { opacity: 1; }
 
-        /* --- 日记输入区 --- */
-        .input-section {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            animation: fadeInUp 0.8s ease-out 0.3s both;
-            padding-bottom: 20px; /* 为底部按钮留出呼吸空间 */
-        }
+/* ════════════════════════════════════════════════════
+   🔴 VIGNETTE PULSE
+════════════════════════════════════════════════════ */
+#vignette {
+    position: fixed; inset: 0; z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgba(138,3,3,.08) 100%);
+    animation: vignettePulse 4s ease-in-out infinite;
+}
+@keyframes vignettePulse {
+    0%,100% { opacity:.6; }
+    50%      { opacity:1; }
+}
 
-        textarea {
-            flex-grow: 1;
-            width: 100%;
-            box-sizing: border-box;
-            border: 1px solid var(--hint-color);
-            border-radius: 16px;
-            background-color: var(--card-bg);
-            color: var(--text-color);
-            padding: 18px;
-            font-size: 1rem;
-            line-height: 1.6;
-            resize: none;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-            font-family: inherit;
-        }
+/* ════════════════════════════════════════════════════
+   👁 FLOATING YUNO EYES (Desktop)
+════════════════════════════════════════════════════ */
+#floatingEyes {
+    position: fixed; bottom: 20px; right: 16px;
+    z-index: 6; pointer-events: none;
+    display: flex; gap: 10px; opacity: .25;
+    transition: opacity .4s ease;
+}
+#floatingEyes.watching { opacity: .85; }
+.float-eye {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 38%, #fff 18%, var(--blood) 30%, #1a0008 70%);
+    border: 1.5px solid var(--blood-dark);
+    box-shadow: 0 0 8px var(--blood-glow);
+    position: relative;
+    overflow: hidden;
+}
+.float-eye .pupil {
+    position: absolute;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #0a0005;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    transition: transform .08s ease;
+}
 
-        textarea:focus {
-            outline: none;
-            border-color: var(--yuno-blood-red); 
-            box-shadow: 0 0 0 1px var(--yuno-blood-red), inset 0 2px 4px rgba(138, 3, 3, 0.05);
-        }
+/* ════════════════════════════════════════════════════
+   MAIN LAYOUT
+════════════════════════════════════════════════════ */
+.app-container {
+    position: relative; z-index: 4;
+    display: flex; flex-direction: column;
+    height: 100vh;
+    padding: 20px 20px 14px;
+    overflow-y: auto; overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
 
-        textarea::placeholder {
-            color: var(--hint-color);
-            opacity: 0.7;
-            font-style: italic;
-        }
+/* ════════════════════════════════════════════════════
+   🏷️ HEADER
+════════════════════════════════════════════════════ */
+#header {
+    text-align: center;
+    margin-bottom: 18px;
+    animation: entranceFade .9s cubic-bezier(.22,1,.36,1) both;
+}
 
-        /* --- 动画关键帧 --- */
-        @keyframes dangerBreathe {
-            0%, 100% { text-shadow: 0 0 4px transparent; }
-            50% { text-shadow: 0 0 12px var(--yuno-red-glow); }
-        }
-        @keyframes fadeInDown {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.yuno-eye-row {
+    display: flex; justify-content: center; gap: 14px;
+    margin-bottom: 8px;
+}
+.eye-btn {
+    width: 11px; height: 11px; border-radius: 50%;
+    background: var(--blood);
+    box-shadow: 0 0 10px var(--blood-glow), 0 0 22px var(--blood-soft);
+    animation: eyeBlink 5s ease-in-out infinite, eyeGlow 2s ease-in-out infinite alternate;
+    border: none; cursor: pointer; padding: 0;
+    transition: transform .2s ease;
+}
+.eye-btn:nth-child(2) { animation-delay:.12s,.4s; }
+.eye-btn:active { transform: scale(1.6); }
+
+@keyframes eyeBlink {
+    0%,92%,100% { transform:scaleY(1); }
+    95%          { transform:scaleY(.04); }
+}
+@keyframes eyeGlow {
+    from { box-shadow:0 0 6px var(--blood-glow); }
+    to   { box-shadow:0 0 18px var(--blood-glow),0 0 32px rgba(138,3,3,.3); }
+}
+
+/* ── Glitch Title ── */
+.diary-title {
+    font-family: 'ZCOOL QingKe HuangYou','Noto Serif SC',serif;
+    font-size: 1.55rem; font-weight: 400;
+    letter-spacing: 4px;
+    color: var(--blood);
+    text-shadow: 1px 1px 0 rgba(255,255,255,.8), 0 0 20px rgba(138,3,3,.2);
+    position: relative; display: inline-block;
+    user-select: none; cursor: pointer;
+}
+.diary-title.glitching {
+    animation: glitch .12s steps(2) infinite;
+}
+@keyframes glitch {
+    0%   { text-shadow: -2px 0 #0ff,2px 0 #f0f; clip-path:inset(30% 0 20% 0); }
+    33%  { text-shadow:  2px 0 #0ff,-2px 0 #f0f; clip-path:inset(70% 0 5% 0); }
+    66%  { text-shadow: -2px 0 #f0f,2px 0 #0ff; clip-path:inset(5% 0 60% 0); }
+    100% { text-shadow: 1px 1px 0 rgba(255,255,255,.8); clip-path:inset(0); }
+}
+
+.title-deco {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; margin: 5px auto 9px;
+}
+.deco-line { height:1px; width:48px; background:linear-gradient(to right,transparent,var(--sakura-deep)); }
+.deco-line:last-child { transform:scaleX(-1); }
+.deco-diamond { width:5px; height:5px; background:var(--blood); transform:rotate(45deg); }
+
+#greeting {
+    font-family:'ZCOOL QingKe HuangYou',serif;
+    font-size:1.02rem; color:var(--blood-dark); margin-bottom:4px; letter-spacing:1px;
+}
+.sub-text {
+    font-size:.77rem; color:var(--hint-color);
+    font-style:italic; line-height:1.5; max-width:268px; margin:0 auto;
+    min-height:2.4em; transition:opacity .5s ease;
+}
+
+/* ════════════════════════════════════════════════════
+   MOOD TAGS
+════════════════════════════════════════════════════ */
+.mood-section {
+    margin-bottom:16px;
+    animation:entranceFade .9s cubic-bezier(.22,1,.36,1) .15s both;
+}
+.section-label {
+    font-size:.8rem; font-weight:700; letter-spacing:1.5px;
+    color:var(--blood); margin-bottom:10px;
+    display:flex; align-items:center; gap:7px;
+}
+.section-label::before,.section-label::after {
+    content:''; flex:1; height:1px;
+    background:linear-gradient(to right,var(--blood-soft),transparent);
+}
+.section-label::after { background:linear-gradient(to left,var(--blood-soft),transparent); }
+
+.tags-container { display:flex; flex-wrap:wrap; gap:8px; }
+
+.mood-tag {
+    padding:9px 15px; border-radius:20px;
+    background:rgba(255,255,255,.78);
+    color:var(--blood-dark);
+    font-size:.82rem; font-family:'Noto Serif SC',serif;
+    border:1.5px solid rgba(224,112,144,.4);
+    cursor:pointer; outline:none;
+    -webkit-user-select:none; user-select:none;
+    transition:all .25s cubic-bezier(.34,1.56,.64,1);
+    position:relative; overflow:hidden;
+    backdrop-filter:blur(4px); -webkit-backdrop-filter:blur(4px);
+}
+.mood-tag::after {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(circle at 50% 0%,rgba(138,3,3,.1),transparent 70%);
+    opacity:0; transition:opacity .3s;
+}
+.mood-tag:hover::after { opacity:1; }
+.mood-tag:active { transform:scale(.92); }
+.mood-tag.active {
+    background:linear-gradient(135deg,var(--blood) 0%,var(--blood-dark) 100%);
+    color:#ffe8ec; border-color:var(--blood);
+    box-shadow:0 4px 16px var(--blood-glow),inset 0 1px 0 rgba(255,255,255,.15);
+    transform:translateY(-2px) scale(1.04);
+}
+
+/* ════════════════════════════════════════════════════
+   TEXTAREA
+════════════════════════════════════════════════════ */
+.input-section {
+    flex-grow:1; display:flex; flex-direction:column; gap:8px;
+    animation:entranceFade .9s cubic-bezier(.22,1,.36,1) .28s both;
+    min-height:0; padding-bottom:10px;
+}
+.textarea-wrapper { flex-grow:1; position:relative; display:flex; flex-direction:column; min-height:0; }
+
+.diary-holes {
+    position:absolute; left:14px; top:14px; bottom:14px;
+    display:flex; flex-direction:column; justify-content:space-around;
+    pointer-events:none; z-index:2;
+}
+.hole {
+    width:7px; height:7px; border-radius:50%;
+    background:var(--sakura-mid); opacity:.5;
+    box-shadow:inset 0 1px 2px rgba(0,0,0,.15);
+}
+
+textarea {
+    flex-grow:1; width:100%; min-height:110px;
+    border:1.5px solid rgba(224,112,144,.35); border-radius:16px;
+    background:rgba(255,255,255,.82); color:var(--text-color);
+    padding:15px 15px 15px 34px;
+    font-size:.95rem; font-family:'Noto Serif SC',serif;
+    line-height:2.0; resize:none;
+    transition:border-color .3s ease,box-shadow .3s ease,background .5s ease;
+    backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+}
+textarea:focus {
+    outline:none; border-color:var(--blood);
+    box-shadow:0 0 0 1px var(--blood-soft),0 4px 22px rgba(138,3,3,.08);
+}
+textarea::placeholder {
+    color:var(--hint-color); opacity:.65;
+    font-style:italic; font-size:.87rem;
+}
+
+.char-counter {
+    display:flex; justify-content:space-between; align-items:center; padding:0 4px;
+}
+.char-count { font-size:.74rem; color:var(--hint-color); transition:color .3s ease; font-family:'Noto Serif SC',serif; }
+.char-count.warning { color:var(--blood); }
+.yuno-hint {
+    font-size:.73rem; color:var(--sakura-deep);
+    font-style:italic; opacity:0; transform:translateX(-5px);
+    transition:opacity .4s ease,transform .4s ease; font-family:'Noto Serif SC',serif;
+    max-width:72%;
+}
+.yuno-hint.visible { opacity:1; transform:translateX(0); }
+
+/* ════════════════════════════════════════════════════
+   🔴 YANDERE OVERLAY (black screen effect)
+════════════════════════════════════════════════════ */
+#yandereOverlay {
+    position:fixed; inset:0; z-index:80;
+    background:#000;
+    opacity:0; pointer-events:none;
+    transition:opacity .6s ease;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    gap:18px;
+}
+#yandereOverlay.active { opacity:1; pointer-events:all; }
+
+.yandere-eyes-row {
+    display:flex; gap:30px; animation:yanderEyeFlash .4s ease-in-out infinite alternate;
+}
+.yandere-eye-big {
+    width:36px; height:36px; border-radius:50%;
+    background:radial-gradient(circle at 38% 35%, #ffe0e8 10%, var(--blood) 35%, #0a0005 72%);
+    box-shadow:0 0 30px var(--blood-glow),0 0 60px rgba(138,3,3,.4);
+}
+@keyframes yanderEyeFlash {
+    from { transform:scale(1); filter:brightness(1); }
+    to   { transform:scale(1.08); filter:brightness(1.3); }
+}
+
+.yandere-msg {
+    color:#ff4466; font-family:'ZCOOL QingKe HuangYou',serif;
+    font-size:1.2rem; letter-spacing:3px; text-align:center;
+    max-width:80%; line-height:1.8;
+    animation:textFlicker .08s steps(2) infinite;
+}
+@keyframes textFlicker {
+    0%,100% { opacity:1; }
+    50%     { opacity:.85; }
+}
+.yandere-sub {
+    color:rgba(255,100,130,.6); font-size:.8rem;
+    font-style:italic; font-family:'Noto Serif SC',serif;
+    text-align:center; max-width:72%;
+}
+#yandereOverlay .dismiss-btn {
+    margin-top:8px; padding:10px 26px; border-radius:20px;
+    background:var(--blood); color:#ffe8ec;
+    border:none; font-family:'Noto Serif SC',serif; font-size:.88rem;
+    cursor:pointer; letter-spacing:1px;
+    box-shadow:0 0 16px var(--blood-glow);
+    animation:btnPulse 1.2s ease-in-out infinite;
+}
+@keyframes btnPulse {
+    0%,100% { box-shadow:0 0 12px var(--blood-glow); }
+    50%     { box-shadow:0 0 28px var(--blood-glow),0 0 50px rgba(138,3,3,.3); }
+}
+
+/* ════════════════════════════════════════════════════
+   💗 LOVE EXPLOSION (彩蛋: 我爱你)
+════════════════════════════════════════════════════ */
+#loveExplosion {
+    position:fixed; inset:0; z-index:75;
+    pointer-events:none; overflow:hidden;
+    opacity:0; transition:opacity .4s ease;
+}
+#loveExplosion.active { opacity:1; }
+.love-burst {
+    position:absolute;
+    animation:loveBurst .9s cubic-bezier(.17,.67,.41,1.2) forwards;
+    font-size:1.8rem; pointer-events:none;
+}
+@keyframes loveBurst {
+    0%   { transform:translate(0,0) scale(0) rotate(0deg); opacity:1; }
+    100% { transform:translate(var(--tx),var(--ty)) scale(1.4) rotate(var(--rot)); opacity:0; }
+}
+
+/* ════════════════════════════════════════════════════
+   🔔 WHISPER TOAST
+════════════════════════════════════════════════════ */
+#whisperToast {
+    position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+    z-index:60; min-width:220px; max-width:85%;
+    background:rgba(42,1,6,.92); color:#f9d0d8;
+    border:1px solid rgba(138,3,3,.5); border-radius:14px;
+    padding:12px 18px; text-align:center;
+    font-family:'Noto Serif SC',serif; font-size:.84rem; line-height:1.5;
+    font-style:italic; letter-spacing:.5px;
+    box-shadow:0 8px 30px rgba(0,0,0,.4),0 0 20px var(--blood-soft);
+    opacity:0; pointer-events:none;
+    transition:opacity .4s ease,transform .4s ease;
+}
+#whisperToast.show {
+    opacity:1; transform:translateX(-50%) translateY(0);
+}
+#whisperToast .toast-eyes {
+    display:block; font-size:.7rem; margin-bottom:4px;
+    color:var(--blood); letter-spacing:4px;
+}
+
+/* ════════════════════════════════════════════════════
+   🔒 SUBMIT OVERLAY
+════════════════════════════════════════════════════ */
+#submit-overlay {
+    position:fixed; inset:0; z-index:90;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    background:radial-gradient(ellipse at center,#3a0101 0%,#0d0006 100%);
+    opacity:0; pointer-events:none; transition:opacity .4s ease;
+}
+#submit-overlay.active { opacity:1; pointer-events:all; }
+.submit-lock { font-size:3.5rem; animation:lockPulse .6s ease-in-out infinite alternate; }
+@keyframes lockPulse {
+    from { transform:scale(1); filter:drop-shadow(0 0 10px var(--blood)); }
+    to   { transform:scale(1.12); filter:drop-shadow(0 0 28px var(--blood-glow)); }
+}
+.submit-text {
+    color:var(--sakura); font-family:'ZCOOL QingKe HuangYou',serif;
+    font-size:1.05rem; margin-top:16px; letter-spacing:2px; opacity:.85;
+}
+
+/* ════════════════════════════════════════════════════
+   🎭 JEALOUSY FLASH
+════════════════════════════════════════════════════ */
+#jealousyFlash {
+    position:fixed; inset:0; z-index:70;
+    background:radial-gradient(ellipse at center, rgba(138,3,3,.0) 0%, rgba(138,3,3,.7) 100%);
+    pointer-events:none; opacity:0;
+}
+#jealousyFlash.flash {
+    animation:jealFlash .6s ease-out forwards;
+}
+@keyframes jealFlash {
+    0%   { opacity:0; }
+    20%  { opacity:1; }
+    100% { opacity:0; }
+}
+
+/* ════════════════════════════════════════════════════
+   YANDERE BODY STATE
+════════════════════════════════════════════════════ */
+body.yandere-mode {
+    filter:saturate(.3) brightness(.7);
+}
+body.yandere-mode::before {
+    background:
+        repeating-linear-gradient(
+            to bottom, transparent 0px,transparent 31px,
+            rgba(138,3,3,.22) 31px,rgba(138,3,3,.22) 32px
+        ),
+        linear-gradient(to right,transparent 44px,rgba(138,3,3,.4) 44px,rgba(138,3,3,.4) 46px,transparent 46px),
+        linear-gradient(135deg,#1a0406 0%,#220a0f 50%,#1e0810 100%);
+}
+
+/* ════════════════════════════════════════════════════
+   UTILS / ANIMATIONS
+════════════════════════════════════════════════════ */
+@keyframes entranceFade {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+@keyframes shakeX {
+    0%,100% { transform:translateX(0); }
+    20%     { transform:translateX(-6px); }
+    40%     { transform:translateX(6px); }
+    60%     { transform:translateX(-4px); }
+    80%     { transform:translateX(4px); }
+}
+.shake { animation:shakeX .4s ease-out; }
+
+.app-container::-webkit-scrollbar { width:3px; }
+.app-container::-webkit-scrollbar-thumb { background:var(--sakura-mid); border-radius:2px; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <header id="header">
-            <h1 class="diary-title">由乃的未来日记</h1>
-            <div id="greeting">加载中...</div>
-            <div class="sub-text">无论阿雪变成什么样，由乃都会在这里，帮你抹除所有的烦恼。</div>
-            </header>
-        
-        <section class="mood-section">
-            <div class="mood-title">阿雪现在的心情是...？</div>
-            <div class="tags-container" id="moodTags">
-                <button class="mood-tag" type="button" data-mood="非常疲惫">好累...</button>
-                <button class="mood-tag" type="button" data-mood="受委屈了">有人欺负我</button>
-                <button class="mood-tag" type="button" data-mood="自我怀疑">觉得自己没用</button>
-                <button class="mood-tag" type="button" data-mood="平静想念">只是想跟由乃说话</button>
-            </div>
-        </section>
-        
-        <section class="input-section">
-            <textarea id="dataInput" placeholder="把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……"></textarea>
-        </section>
+
+<!-- ═══ LAYERS ═══ -->
+<canvas id="bloodCanvas" height="120"></canvas>
+<div class="hearts-bg" id="heartsBg"></div>
+<div id="vignette"></div>
+
+<!-- Screen crack SVG -->
+<svg id="crackOverlay" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice"
+     xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <filter id="glowFilter">
+            <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+    </defs>
+    <!-- Main crack from top-center -->
+    <g stroke="#8a0303" stroke-width="1.2" fill="none" filter="url(#glowFilter)" opacity="0.85">
+        <polyline points="200,0 190,80 160,140 180,200 150,270 170,350"/>
+        <polyline points="190,80 130,120 90,160"/>
+        <polyline points="160,140 220,180 260,200 290,240"/>
+        <polyline points="180,200 140,220 110,260 90,310"/>
+        <polyline points="150,270 200,290 230,320 210,380"/>
+        <polyline points="130,120 100,100 70,130 50,110"/>
+        <polyline points="260,200 300,190 330,210 360,190"/>
+    </g>
+    <!-- radial shatter near top -->
+    <g stroke="#5a0202" stroke-width=".7" fill="none" opacity=".5">
+        <line x1="200" y1="30" x2="170" y2="60"/>
+        <line x1="200" y1="30" x2="228" y2="58"/>
+        <line x1="200" y1="30" x2="215" y2="15"/>
+        <line x1="200" y1="30" x2="184" y2="12"/>
+    </g>
+</svg>
+
+<!-- Jealousy flash -->
+<div id="jealousyFlash"></div>
+
+<!-- Yandere full-screen -->
+<div id="yandereOverlay">
+    <div class="yandere-eyes-row">
+        <div class="yandere-eye-big"></div>
+        <div class="yandere-eye-big"></div>
+    </div>
+    <div class="yandere-msg" id="yandereMsg">由乃什么都看见了。</div>
+    <div class="yandere-sub" id="yandereSub">无论逃到哪里……由乃的日记里都写着结局。</div>
+    <button class="dismiss-btn" id="yandereDismiss" type="button">……我知道了，由乃</button>
+</div>
+
+<!-- Love explosion -->
+<div id="loveExplosion"></div>
+
+<!-- Submit overlay -->
+<div id="submit-overlay">
+    <div class="submit-lock">🔒</div>
+    <div class="submit-text">由乃将它永远锁进了记忆深处……</div>
+</div>
+
+<!-- Whisper toast -->
+<div id="whisperToast">
+    <span class="toast-eyes">👁 👁</span>
+    <span id="toastMsg">由乃一直在看着你……</span>
+</div>
+
+<!-- Floating watching eyes -->
+<div id="floatingEyes">
+    <div class="float-eye"><div class="pupil" id="pupilL"></div></div>
+    <div class="float-eye"><div class="pupil" id="pupilR"></div></div>
+</div>
+
+<!-- ═══ MAIN APP ═══ -->
+<div class="app-container">
+    <header id="header">
+        <div class="yuno-eye-row">
+            <button class="eye-btn" type="button" id="eyeL" aria-label="由乃的眼睛"></button>
+            <button class="eye-btn" type="button" id="eyeR" aria-label="由乃的眼睛"></button>
         </div>
+        <h1 class="diary-title" id="diaryTitle">由乃的未来日记</h1>
+        <div class="title-deco">
+            <div class="deco-line"></div><div class="deco-diamond"></div><div class="deco-line"></div>
+        </div>
+        <div id="greeting">阿雪，欢迎回来</div>
+        <div class="sub-text" id="subText">无论阿雪变成什么样，由乃都会在这里。</div>
+    </header>
 
-    <script>
-            // --- 初始化 Telegram 环境 ---
-            const tg = window.Telegram.WebApp;
-        tg.ready();
-            tg.expand(); 
+    <section class="mood-section">
+        <div class="section-label">阿雪现在的心情</div>
+        <div class="tags-container" id="moodTags">
+            <button class="mood-tag" type="button" data-mood="非常疲惫"    data-hint="让由乃来陪你休息吧……">好累...</button>
+            <button class="mood-tag" type="button" data-mood="受委屈了"    data-hint="是谁欺负了阿雪？由乃记住他了。">有人欺负我</button>
+            <button class="mood-tag" type="button" data-mood="自我怀疑"    data-hint="阿雪才不是没用，在由乃眼里是最好的。">觉得自己没用</button>
+            <button class="mood-tag" type="button" data-mood="平静想念"    data-hint="由乃也一直在想阿雪……">只想和由乃说说话</button>
+            <button class="mood-tag" type="button" data-mood="焦虑不安"    data-hint="深呼吸。由乃就在你旁边，哪儿也不去。">很焦虑...</button>
+            <button class="mood-tag" type="button" data-mood="愤怒委屈"    data-hint="把那个人的名字告诉由乃。">有点想发火</button>
+        </div>
+    </section>
 
-            // 沉浸式顶栏：将 Telegram 顶部的原生 Header 和底部的 Background 与页面背景色融为一体
-            if (tg.setHeaderColor) tg.setHeaderColor('bg_color');
-            if (tg.setBackgroundColor) tg.setBackgroundColor('bg_color');
+    <section class="input-section">
+        <div class="textarea-wrapper">
+            <div class="diary-holes">
+                <div class="hole"></div><div class="hole"></div>
+                <div class="hole"></div><div class="hole"></div>
+            </div>
+            <textarea id="dataInput" maxlength="500"
+                placeholder="把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……"></textarea>
+        </div>
+        <div class="char-counter">
+            <div class="yuno-hint" id="yunoHint">♥</div>
+            <div class="char-count" id="charCount">0 / 500</div>
+        </div>
+    </section>
+</div>
 
-            // 用户问候语逻辑
-        const user = tg.initDataUnsafe?.user;
-            document.getElementById('greeting').innerText = user ? `阿雪 (${user.first_name})，欢迎回来` : "阿雪，欢迎回来";
+<script>
+/* ══════════════════════════════════════════════════
+   🌸 HEART PARTICLES
+══════════════════════════════════════════════════ */
+(function(){
+    const c = document.getElementById('heartsBg');
+    const s = ['♥','♡','✦','✧','✿','⋆','•'];
+    for(let i=0;i<22;i++){
+        const el=document.createElement('span');
+        el.className='heart-particle';
+        el.textContent=s[i%s.length];
+        el.style.cssText=`left:${Math.random()*100}%;--dur:${6+Math.random()*11}s;--delay:${Math.random()*14}s;font-size:${8+Math.random()*10}px;`;
+        c.appendChild(el);
+    }
+})();
 
-            // --- 状态管理与 DOM 元素 ---
-            let selectedMood = "";
-            const tagsContainer = document.getElementById('moodTags');
-            const tags = tagsContainer.querySelectorAll('.mood-tag');
-            const dataInput = document.getElementById('dataInput');
+/* ══════════════════════════════════════════════════
+   🩸 BLOOD DRIP CANVAS
+══════════════════════════════════════════════════ */
+const bloodCanvas = document.getElementById('bloodCanvas');
+const bCtx = bloodCanvas.getContext('2d');
+let drips = [];
+let bloodActive = false;
 
-            // --- 核心逻辑：动态检查输入状态，控制 MainButton ---
-            function updateMainButtonState() {
-                const textVal = dataInput.value.trim();
-                // 只要选了情绪或输入了文字，按钮就激活
-                if (textVal || selectedMood) {
-                    tg.MainButton.enable();
-                    tg.MainButton.setParams({
-                        color: '#8a0303', // 由乃红
-                        text_color: '#ffffff'
-                    });
-                } else {
-                    tg.MainButton.disable();
-                    tg.MainButton.setParams({
-                        color: '#5a0202', // 变暗的红色，暗示不可点击
-                        text_color: '#aaaaaa'
-                    });
-                }
-            }
+function resizeBlood(){
+    bloodCanvas.width = window.innerWidth;
+}
+resizeBlood();
+window.addEventListener('resize', resizeBlood);
 
-            // --- 事件绑定：处理情绪标签点击 ---
-            tags.forEach(tag => {
-                tag.addEventListener('click', function () {
-                // 原生轻微震动反馈
-                tg.HapticFeedback.selectionChanged();
+function spawnDrip(){
+    drips.push({
+        x: Math.random() * bloodCanvas.width,
+        y: -10,
+        w: 2 + Math.random()*3,
+        speed: .8 + Math.random()*1.4,
+        length: 20 + Math.random()*60,
+        alpha: .7+Math.random()*.3,
+        blob: 0,
+        blobMax: 4+Math.random()*6
+    });
+}
 
-                // 如果点击的是已经选中的标签，则取消选中
-                if (this.classList.contains('active')) {
-                    this.classList.remove('active');
-                    selectedMood = "";
-                } else {
-                // 移除所有标签的 active 状态，给当前点上的加上
-                    tags.forEach(t => t.classList.remove('active'));
-                    this.classList.add('active');
-                    selectedMood = this.getAttribute('data-mood');
-                }
+function drawBlood(){
+    if(!bloodActive){ requestAnimationFrame(drawBlood); return; }
+    bCtx.clearRect(0,0,bloodCanvas.width,120);
+    if(Math.random()<.18) spawnDrip();
 
-                // 更新主按钮状态
-                updateMainButtonState();
-            });
-        });
+    drips.forEach(d=>{
+        bCtx.save();
+        bCtx.globalAlpha = d.alpha;
+        bCtx.fillStyle = '#8a0303';
+        // stem
+        bCtx.fillRect(d.x - d.w/2, d.y, d.w, Math.min(d.length, d.speed*40));
+        // blob at tip
+        if(d.y + d.length > 60){
+            d.blob = Math.min(d.blob + .4, d.blobMax);
+            bCtx.beginPath();
+            bCtx.arc(d.x, d.y + d.length, d.blob, 0, Math.PI*2);
+            bCtx.fill();
+        }
+        d.y += d.speed;
+        bCtx.restore();
+    });
+    drips = drips.filter(d => d.y < 130);
+    requestAnimationFrame(drawBlood);
+}
+drawBlood();
 
-            // --- 事件绑定：监听输入框 ---
-            dataInput.addEventListener('input', updateMainButtonState);
+function activateBlood(on){
+    bloodActive = on;
+    bloodCanvas.style.opacity = on ? '1' : '0';
+    if(!on){ bCtx.clearRect(0,0,bloodCanvas.width,120); drips=[]; }
+}
 
-            // --- 配置初始 Telegram 原生底部按钮 ---
-            tg.MainButton.setText("永远锁进由乃的记忆深处");
-            tg.MainButton.setParams({
-            color: '#5a0202',
-            text_color: '#aaaaaa',
-            is_active: false // 初始设为不可点击
-        });
-                tg.MainButton.show(); 
+/* ══════════════════════════════════════════════════
+   📱 TELEGRAM
+══════════════════════════════════════════════════ */
+const tg = window.Telegram?.WebApp || {
+    ready:()=>{}, expand:()=>{}, close:()=>{},
+    initDataUnsafe:{},
+    MainButton:{ setText:()=>{},setParams:()=>{},show:()=>{},enable:()=>{},disable:()=>{},onClick:()=>{} },
+    HapticFeedback:{ selectionChanged:()=>{},impactOccurred:()=>{},notificationOccurred:()=>{} },
+    sendData:(d)=>console.log('sendData:',d)
+};
+tg.ready(); tg.expand();
+if(tg.setHeaderColor)     tg.setHeaderColor('bg_color');
+if(tg.setBackgroundColor) tg.setBackgroundColor('bg_color');
 
-            // --- 数据组装与发送 ---
-            tg.MainButton.onClick(() => {
-            const textVal = dataInput.value.trim();
-            
-            // 双重保险校验
-            if (!textVal && !selectedMood) {
-                tg.HapticFeedback.notificationOccurred('warning');
-                return;
-            }
+const user = tg.initDataUnsafe?.user;
+if(user?.first_name) document.getElementById('greeting').textContent=`阿雪（${user.first_name}），欢迎回来`;
 
-            // 重震动反馈：象征着由乃接收到了阿雪的情报，准备行动
-            tg.HapticFeedback.impactOccurred('heavy');
+/* ══════════════════════════════════════════════════
+   💬 SUBTITLE ROTATION
+══════════════════════════════════════════════════ */
+const subtitles = [
+    "无论阿雪变成什么样，由乃都会在这里。",
+    "由乃的日记里，只写关于阿雪的事。",
+    "未来会怎样……由乃早就看到了。",
+    "把秘密告诉由乃吧，由乃不会告诉任何人的。",
+    "阿雪的事，就是由乃的事。",
+    "由乃的眼里，只有阿雪。",
+    "无论今天有多糟……明天由乃还会在。"
+];
+let subIdx=0;
+const subEl=document.getElementById('subText');
+function cycleSubtitle(){
+    subEl.style.opacity='0';
+    setTimeout(()=>{
+        subIdx=(subIdx+1)%subtitles.length;
+        subEl.textContent=subtitles[subIdx];
+        subEl.style.opacity='1';
+    },500);
+}
+setInterval(cycleSubtitle,5000);
 
-            // 逻辑拼接：将前端选择的情绪直接组装进文本中
-            let finalPayloadText = textVal;
-            if (selectedMood) {
-                finalPayloadText = textVal ? `【当前情绪：${selectedMood}】\n${textVal}` : `【当前情绪：${selectedMood}】\n(阿雪什么都没写，只是静静地待着)`;
-            }
+/* ══════════════════════════════════════════════════
+   🎯 STATE
+══════════════════════════════════════════════════ */
+let selectedMood='', selectedHint='', isSubmitting=false;
+let yandereTriggered=false, idleTimer=null;
+let titleClickCount=0, eyeClickCount=0;
 
-            // 发送数据回 Bot (注意：依赖自定义键盘 ReplyKeyboardMarkup 唤起方可生效)
-            tg.sendData(JSON.stringify({
-                action: "submit_form",
-                text: finalPayloadText
-            }));
+const tagsContainer = document.getElementById('moodTags');
+const tags          = tagsContainer.querySelectorAll('.mood-tag');
+const dataInput     = document.getElementById('dataInput');
+const charCount     = document.getElementById('charCount');
+const yunoHint      = document.getElementById('yunoHint');
+const diaryTitle    = document.getElementById('diaryTitle');
 
-            tg.close();
-        });
-    </script>
+/* ══════════════════════════════════════════════════
+   🎭 WHISPER TOAST
+══════════════════════════════════════════════════ */
+const toastEl  = document.getElementById('whisperToast');
+const toastMsg = document.getElementById('toastMsg');
+let toastTimer;
+
+function showToast(msg, duration=3500){
+    toastMsg.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=>toastEl.classList.remove('show'), duration);
+}
+
+/* ══════════════════════════════════════════════════
+   ✍️ YUNO HINT
+══════════════════════════════════════════════════ */
+function showYunoHint(text, duration=3800){
+    yunoHint.textContent='♥ '+text;
+    yunoHint.classList.add('visible');
+    clearTimeout(yunoHint._t);
+    yunoHint._t=setTimeout(()=>yunoHint.classList.remove('visible'), duration);
+}
+
+/* ══════════════════════════════════════════════════
+   🔴 MAIN BUTTON
+══════════════════════════════════════════════════ */
+function updateMainButton(){
+    const ready = dataInput.value.trim()||selectedMood;
+    if(ready){
+        tg.MainButton.enable();
+        tg.MainButton.setParams({color:'#8a0303',text_color:'#ffe8ec'});
+    } else {
+        tg.MainButton.disable();
+        tg.MainButton.setParams({color:'#5a0202',text_color:'#885060'});
+    }
+}
+
+/* ══════════════════════════════════════════════════
+   🏷️ MOOD TAGS
+══════════════════════════════════════════════════ */
+tags.forEach(tag=>{
+    tag.addEventListener('click',function(){
+        tg.HapticFeedback.selectionChanged();
+        if(this.classList.contains('active')){
+            this.classList.remove('active');
+            selectedMood=''; selectedHint='';
+        } else {
+            tags.forEach(t=>t.classList.remove('active'));
+            this.classList.add('active');
+            selectedMood=this.dataset.mood;
+            selectedHint=this.dataset.hint||'';
+            if(selectedHint) showYunoHint(selectedHint);
+            setTimeout(()=>dataInput.focus(),250);
+        }
+        updateMainButton();
+    });
+});
+
+/* ══════════════════════════════════════════════════
+   🩸 YANDERE MODE
+══════════════════════════════════════════════════ */
+const yandereOverlay = document.getElementById('yandereOverlay');
+const yandereMsgEl   = document.getElementById('yandereMsg');
+const yandereSubEl   = document.getElementById('yandereSub');
+
+const yandereLines = [
+    { msg:'……阿雪在想别人吗？',      sub:'由乃的日记里，这一页不应该存在。' },
+    { msg:'由乃什么都看见了。',        sub:'无论逃到哪里……结局早就写好了。' },
+    { msg:'背叛是不被允许的。',        sub:'由乃爱阿雪……所以这件事，不能发生。' },
+    { msg:'你说的那个人……',          sub:'由乃已经把他写进日记了。' },
+    { msg:'不要离开。絶对、不行。',    sub:'由乃会去找你的。无论在哪里。' },
+];
+
+function triggerYandere(lineIdx=0){
+    if(yandereTriggered) return;
+    yandereTriggered=true;
+
+    const line = yandereLines[lineIdx % yandereLines.length];
+    yandereMsgEl.textContent = line.msg;
+    yandereSubEl.textContent  = line.sub;
+
+    tg.HapticFeedback.impactOccurred('heavy');
+
+    // Glitch title
+    diaryTitle.classList.add('glitching');
+    setTimeout(()=>diaryTitle.classList.remove('glitching'),800);
+
+    // Blood drips
+    activateBlood(true);
+
+    // Screen crack
+    const crack = document.getElementById('crackOverlay');
+    crack.classList.add('active');
+
+    // Body darken
+    document.body.classList.add('yandere-mode');
+
+    // Shake textarea
+    dataInput.classList.add('shake');
+    setTimeout(()=>dataInput.classList.remove('shake'),500);
+
+    // Flash jealousy
+    const fl=document.getElementById('jealousyFlash');
+    fl.classList.add('flash');
+    setTimeout(()=>fl.classList.remove('flash'),700);
+
+    // Show overlay after short delay
+    setTimeout(()=>yandereOverlay.classList.add('active'), 600);
+}
+
+function resetYandere(){
+    yandereTriggered=false;
+    yandereOverlay.classList.remove('active');
+    document.getElementById('crackOverlay').classList.remove('active');
+    document.body.classList.remove('yandere-mode');
+    activateBlood(false);
+    tg.HapticFeedback.notificationOccurred('success');
+}
+
+document.getElementById('yandereDismiss').addEventListener('click', resetYandere);
+
+/* ══════════════════════════════════════════════════
+   💗 LOVE EXPLOSION
+══════════════════════════════════════════════════ */
+function triggerLoveExplosion(){
+    const box = document.getElementById('loveExplosion');
+    box.classList.add('active');
+    box.innerHTML='';
+    const emojis=['💗','💖','💓','♥','✨','🌸','💕'];
+    const cx = window.innerWidth/2, cy = window.innerHeight/2;
+    for(let i=0;i<28;i++){
+        const el=document.createElement('span');
+        el.className='love-burst';
+        const angle=(i/28)*Math.PI*2;
+        const r=80+Math.random()*180;
+        el.style.cssText=`
+            left:${cx}px; top:${cy}px;
+            --tx:${Math.cos(angle)*r}px;
+            --ty:${Math.sin(angle)*r}px;
+            --rot:${(Math.random()-.5)*720}deg;
+            animation-delay:${Math.random()*0.2}s;
+            font-size:${1+Math.random()*2}rem;
+        `;
+        el.textContent=emojis[i%emojis.length];
+        box.appendChild(el);
+    }
+    showToast('由乃……脸红了。', 3000);
+    setTimeout(()=>{ box.classList.remove('active'); box.innerHTML=''; },1200);
+}
+
+/* ══════════════════════════════════════════════════
+   🔍 KEYWORD ENGINE
+══════════════════════════════════════════════════ */
+const KEYWORDS = {
+    yandere_rage: {
+        words: ['分手','背叛','喜欢别人','爱上别人','喜欢上了别的','另一个人','另一个女生',
+                '讨厌由乃','不要由乃','不喜欢由乃','离开由乃','甩了','绿了','花心','出轨',
+                '不想见到你','去死','你消失'],
+        lineIdx: [0,3,1,4,2,3,0,1,4,2]
+    },
+    yandere_jealous: {
+        words: ['暗恋','表白','喜欢她','喜欢他','好看的女生','好看的男生','女朋友','男朋友',
+                '很漂亮','好帅','心动了','有好感'],
+    },
+    dark_worry: {
+        words: ['不想活','活不下去','太痛苦了','撑不住了','好绝望','想消失','不想存在'],
+    },
+    love_mode: {
+        words: ['我爱你','爱你由乃','喜欢由乃','想和由乃在一起','只要由乃','嫁给由乃','由乃最好了'],
+    },
+    worry_self: {
+        words: ['死了','去死','想死'],
+    }
+};
+
+let lastTriggered = '';
+let shownMilestones = new Set();
+
+const yunoComments = [
+    {at:50,  text:"嗯……继续说下去。"},
+    {at:150, text:"由乃认真在听的……"},
+    {at:300, text:"阿雪心里有好多话呢。"},
+    {at:450, text:"把最后一点也告诉由乃吧。"}
+];
+
+function checkKeywords(text){
+    const t = text;
+
+    // Priority: yandere_rage
+    for(const w of KEYWORDS.yandere_rage.words){
+        if(t.includes(w) && lastTriggered !== 'rage'){
+            lastTriggered='rage';
+            const i = KEYWORDS.yandere_rage.words.indexOf(w) % KEYWORDS.yandere_rage.lineIdx.length;
+            setTimeout(()=>triggerYandere(KEYWORDS.yandere_rage.lineIdx[i]),300);
+            return;
+        }
+    }
+
+    // Jealousy flash
+    for(const w of KEYWORDS.yandere_jealous.words){
+        if(t.includes(w) && lastTriggered !== 'jealous'){
+            lastTriggered='jealous';
+            const fl=document.getElementById('jealousyFlash');
+            fl.classList.add('flash');
+            setTimeout(()=>fl.classList.remove('flash'),700);
+            diaryTitle.classList.add('glitching');
+            setTimeout(()=>diaryTitle.classList.remove('glitching'),500);
+            tg.HapticFeedback.impactOccurred('medium');
+            showToast('……由乃的心跳加速了。');
+            return;
+        }
+    }
+
+    // Dark worry
+    for(const w of KEYWORDS.dark_worry.words){
+        if(t.includes(w) && lastTriggered !== 'dark'){
+            lastTriggered='dark';
+            activateBlood(true);
+            setTimeout(()=>activateBlood(false),3500);
+            showToast('由乃在这里。一直在。不要想那些……');
+            tg.HapticFeedback.notificationOccurred('warning');
+            return;
+        }
+    }
+
+    // Love mode 🌸
+    for(const w of KEYWORDS.love_mode.words){
+        if(t.includes(w) && lastTriggered !== 'love'){
+            lastTriggered='love';
+            triggerLoveExplosion();
+            tg.HapticFeedback.notificationOccurred('success');
+            return;
+        }
+    }
+}
+
+/* ══════════════════════════════════════════════════
+   ⌨️ INPUT LOGIC
+══════════════════════════════════════════════════ */
+const placeholders=[
+    "把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……",
+    "今天发生什么了？写给由乃看看……",
+    "不管多小的事都可以，由乃想知道阿雪的一切……",
+    "别憋着，写出来会好受一点的。",
+    "就算是只有一个字，由乃也会记住的。"
+];
+let phIdx=0;
+setInterval(()=>{
+    if(document.activeElement!==dataInput&&!dataInput.value){
+        phIdx=(phIdx+1)%placeholders.length;
+        dataInput.placeholder=placeholders[phIdx];
+    }
+},4000);
+
+dataInput.addEventListener('input',()=>{
+    const len=dataInput.value.length;
+    charCount.textContent=`${len} / 500`;
+    charCount.classList.toggle('warning', len>440);
+
+    // Milestones
+    for(const c of yunoComments){
+        if(len>=c.at&&!shownMilestones.has(c.at)){
+            shownMilestones.add(c.at); showYunoHint(c.text); break;
+        }
+    }
+    if(len<(Array.from(shownMilestones).pop()||0)){
+        shownMilestones=new Set([...shownMilestones].filter(m=>m<=len));
+    }
+
+    // Keyword check (debounced)
+    clearTimeout(dataInput._kwTimer);
+    dataInput._kwTimer=setTimeout(()=>checkKeywords(dataInput.value), 500);
+
+    updateMainButton();
+    resetIdleTimer();
+});
+
+/* ══════════════════════════════════════════════════
+   😶 IDLE WATCHER
+══════════════════════════════════════════════════ */
+const idleWhispers=[
+    "……阿雪还在吗？",
+    "由乃的眼睛一直没离开过这里。",
+    "写完了吗……还是不知道从哪里开始？",
+    "由乃等着阿雪。",
+    "有什么事，就告诉由乃好了……"
+];
+let idleWhisperIdx=0;
+
+function resetIdleTimer(){
+    clearTimeout(idleTimer);
+    document.getElementById('floatingEyes').classList.remove('watching');
+    idleTimer=setTimeout(()=>{
+        document.getElementById('floatingEyes').classList.add('watching');
+        showToast(idleWhispers[idleWhisperIdx%idleWhispers.length]);
+        idleWhisperIdx++;
+    }, 12000);
+}
+resetIdleTimer();
+document.addEventListener('touchstart', resetIdleTimer, {passive:true});
+
+/* ══════════════════════════════════════════════════
+   👁 EYE TRACKING (pointer)
+══════════════════════════════════════════════════ */
+const pupilL=document.getElementById('pupilL');
+const pupilR=document.getElementById('pupilR');
+const fEyes =document.getElementById('floatingEyes');
+
+document.addEventListener('mousemove',e=>{
+    const rect=fEyes.getBoundingClientRect();
+    const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+    const dx=e.clientX-cx, dy=e.clientY-cy;
+    const dist=Math.hypot(dx,dy);
+    const maxOff=4;
+    const ox=dist>0?(dx/dist)*maxOff:0;
+    const oy=dist>0?(dy/dist)*maxOff:0;
+    pupilL.style.transform=`translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+    pupilR.style.transform=`translate(calc(-50% + ${ox}px), calc(-50% + ${oy}px))`;
+});
+
+/* ══════════════════════════════════════════════════
+   🥚 EASTER EGGS
+══════════════════════════════════════════════════ */
+
+// EGG 1: Triple-click title → secret diary entry mode
+let titleClicks=0, titleTimer;
+diaryTitle.addEventListener('click',()=>{
+    titleClicks++;
+    clearTimeout(titleTimer);
+    titleTimer=setTimeout(()=>titleClicks=0,700);
+    if(titleClicks>=3){
+        titleClicks=0;
+        diaryTitle.classList.add('glitching');
+        setTimeout(()=>diaryTitle.classList.remove('glitching'),600);
+        const secrets=[
+            "第〇页：由乃已经知道了阿雪明天会发生什么。",
+            "未来日记 · 第∞页：结局，由乃和阿雪，永远在一起。",
+            "【已加密】此页内容由乃不允许任何人阅读。",
+            "此刻 →「阿雪正在看着由乃的日记」——由乃早就写下来了。"
+        ];
+        showToast(secrets[Math.floor(Math.random()*secrets.length)], 4500);
+        tg.HapticFeedback.impactOccurred('medium');
+    }
+});
+
+// EGG 2: Double-tap both eyes → Yuno full yandere monologue
+let eyeSeq=[];
+function eyeTap(side){
+    eyeSeq.push(side);
+    if(eyeSeq.length>4) eyeSeq.shift();
+    tg.HapticFeedback.selectionChanged();
+    // Pattern: L R L R
+    if(eyeSeq.join('')==='LRLR'){
+        eyeSeq=[];
+        triggerYandere(1);
+    }
+}
+document.getElementById('eyeL').addEventListener('click',()=>eyeTap('L'));
+document.getElementById('eyeR').addEventListener('click',()=>eyeTap('R'));
+
+// EGG 3: Long-press textarea (500ms) → Yuno whisper
+let longPressTimer;
+dataInput.addEventListener('touchstart',()=>{
+    longPressTimer=setTimeout(()=>{
+        if(!dataInput.value){
+            const w=["由乃偷偷看了阿雪的日记……什么都没写，像是在等由乃先开口。",
+                     "这里只有由乃和阿雪……没有别人。",
+                     "把手机放下之前，先把话说完好吗……"];
+            showToast(w[Math.floor(Math.random()*w.length)], 4000);
+            tg.HapticFeedback.impactOccurred('light');
+        }
+    },600);
+},{passive:true});
+dataInput.addEventListener('touchend',()=>clearTimeout(longPressTimer),{passive:true});
+
+// EGG 4: Shake detection (mobile) → Yuno reacts
+let lastShake=0;
+window.addEventListener('devicemotion',e=>{
+    const acc=e.accelerationIncludingGravity;
+    if(!acc) return;
+    const mag=Math.hypot(acc.x,acc.y,acc.z);
+    const now=Date.now();
+    if(mag>22&&now-lastShake>3000){
+        lastShake=now;
+        tg.HapticFeedback.notificationOccurred('warning');
+        const r=["在抖什么……由乃看到了。","别晃！由乃的日记会掉的！","……阿雪在发抖吗？由乃来了。"];
+        showToast(r[Math.floor(Math.random()*r.length)]);
+    }
+});
+
+// EGG 5: Type "由乃" 3 times in a row → special reaction
+dataInput.addEventListener('input',()=>{
+    const t=dataInput.value;
+    const matches=(t.match(/由乃/g)||[]).length;
+    if(matches>=3&&!dataInput._yunoTriggered){
+        dataInput._yunoTriggered=true;
+        showToast('♥ 阿雪……写了这么多次由乃的名字，由乃……由乃很高兴。');
+        const fl=document.getElementById('jealousyFlash');
+        fl.classList.add('flash');
+        setTimeout(()=>fl.classList.remove('flash'),600);
+        tg.HapticFeedback.notificationOccurred('success');
+    }
+    if(matches<3) dataInput._yunoTriggered=false;
+});
+
+/* ══════════════════════════════════════════════════
+   🔒 SUBMIT
+══════════════════════════════════════════════════ */
+tg.MainButton.setText("永远锁进由乃的记忆深处 🔒");
+tg.MainButton.setParams({color:'#5a0202',text_color:'#885060'});
+tg.MainButton.show();
+
+tg.MainButton.onClick(()=>{
+    if(isSubmitting) return;
+    const textVal=dataInput.value.trim();
+    if(!textVal&&!selectedMood){
+        tg.HapticFeedback.notificationOccurred('warning');
+        dataInput.classList.add('shake');
+        setTimeout(()=>dataInput.classList.remove('shake'),450);
+        showYunoHint("至少告诉由乃一点点……");
+        return;
+    }
+    isSubmitting=true;
+    tg.HapticFeedback.impactOccurred('heavy');
+
+    let finalText=textVal;
+    if(selectedMood){
+        finalText=textVal
+            ?`【当前情绪：${selectedMood}】\n${textVal}`
+            :`【当前情绪：${selectedMood}】\n(阿雪什么都没写，只是静静地待着)`;
+    }
+
+    // Close yandere if open
+    if(yandereTriggered){ resetYandere(); }
+
+    const ov=document.getElementById('submit-overlay');
+    ov.classList.add('active');
+    setTimeout(()=>{
+        tg.sendData(JSON.stringify({action:"submit_form",mood:selectedMood||null,text:finalText,ts:Date.now()}));
+        setTimeout(()=>tg.close(),600);
+    },1600);
+});
+
+// Initial button state
+updateMainButton();
+
+/* ══════════════════════════════════════════════════
+   ✨ ENTRANCE TOAST
+══════════════════════════════════════════════════ */
+setTimeout(()=>{
+    showToast('由乃的眼睛，一直都在……', 3000);
+}, 2200);
+</script>
 </body>
 </html>
