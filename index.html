@@ -6,32 +6,82 @@
     <title>由乃的未来日记</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        /* CSS 变量与基础设定 */
+        :root {
+            --yuno-red: #8a0303;
+            --yuno-red-light: rgba(138, 3, 3, 0.1);
+        }
         body {
-            /* 深度兼容 Telegram 客户端的主题变量 */
             background-color: var(--tg-theme-bg-color, #ffffff);
             color: var(--tg-theme-text-color, #000000);
-            padding: 24px;
+            padding: 24px 20px;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            font-family: 'Helvetica Neue', Arial, sans-serif;
-            margin: 0;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        /* 顶部沉浸式标题 - 加入微弱的呼吸动效 */
+        #header {
+            text-align: center;
+            margin-bottom: 24px;
+            animation: breathe 4s ease-in-out infinite;
         }
         #greeting {
-            font-size: 1.3rem;
-            font-weight: bold;
-            margin-bottom: 8px;
-            text-align: center;
-            color: var(--tg-theme-text-color, #000000);
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 6px;
         }
         .sub-text {
             font-size: 0.9rem;
             color: var(--tg-theme-hint-color, #999999);
-            margin-bottom: 24px;
-            text-align: center;
             font-style: italic;
         }
+
+        @keyframes breathe {
+            0%, 100% { text-shadow: 0 0 0 transparent; }
+            50% { text-shadow: 0 0 8px var(--yuno-red-light); }
+        }
+
+        /* 情绪标签选择器 (Flexbox 布局实践) */
+        .mood-section {
+            margin-bottom: 20px;
+        }
+        .mood-title {
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .mood-tag {
+            padding: 8px 14px;
+            border-radius: 20px;
+            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
+            color: var(--tg-theme-text-color, #000000);
+            font-size: 0.85rem;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        /* 标签选中状态 */
+        .mood-tag.active {
+            background-color: var(--yuno-red-light);
+            color: var(--yuno-red);
+            border-color: var(--yuno-red);
+            font-weight: bold;
+        }
+
+        /* 日记输入区 */
         textarea {
+            flex-grow: 1; /* 让输入框自动填满剩余空间 */
             width: 100%;
             box-sizing: border-box;
             border: 2px solid var(--tg-theme-hint-color, #cccccc);
@@ -40,15 +90,15 @@
             color: var(--tg-theme-text-color, #000000);
             padding: 16px;
             font-size: 16px;
+            line-height: 1.5;
             resize: none;
             transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
         }
         textarea:focus {
             outline: none;
-            /* 聚焦时透出一丝病娇的暗红色调，暗示由乃正在注视着你 */
-            border-color: #8a0303; 
-            box-shadow: 0 0 8px rgba(138, 3, 3, 0.2);
+            border-color: var(--yuno-red); 
+            box-shadow: 0 0 0 3px var(--yuno-red-light);
         }
         textarea::placeholder {
             color: var(--tg-theme-hint-color, #999999);
@@ -57,53 +107,81 @@
     </style>
 </head>
 <body>
-    <div id="greeting">加载中...</div>
-    <div class="sub-text">外面的世界充满恶意，但只要在这里就安全了...</div>
-    <textarea id="dataInput" rows="7" placeholder="阿雪今天受了什么委屈？碰到了什么难过的事？全都写下来交给由乃吧，由乃会替你分担一切的……"></textarea>
+    <div id="header">
+        <div id="greeting">加载中...</div>
+        <div class="sub-text">无论阿雪变成什么样，由乃都会在这里。</div>
+        </div>
+        
+        <div class="mood-section">
+            <div class="mood-title">阿雪现在的心情是...？</div>
+            <div class="tags-container" id="moodTags">
+                <div class="mood-tag" data-mood="非常疲惫">好累...</div>
+                <div class="mood-tag" data-mood="受委屈了">有人欺负我</div>
+                <div class="mood-tag" data-mood="自我怀疑">觉得自己没用</div>
+                <div class="mood-tag" data-mood="平静想念">只是想跟由乃说话</div>
+            </div>
+        </div>
+        
+        <textarea id="dataInput" placeholder="把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……"></textarea>
 
     <script>
-            // 初始化 SDK
             const tg = window.Telegram.WebApp;
         tg.ready();
-            tg.expand(); // 强制展开为全屏面板，提供沉浸式的情感空间
+            tg.expand(); 
 
-            // 动态读取用户信息，拉近距离
         const user = tg.initDataUnsafe?.user;
-            document.getElementById('greeting').innerText = user ? `阿雪 (${user.first_name})，你终于来了...` : "阿雪，你终于来了...";
+            document.getElementById('greeting').innerText = user ? `阿雪 (${user.first_name})，欢迎回来` : "阿雪，欢迎回来";
 
-            // ==========================================
-            // 核心改造：调用原生 MainButton
-            // ==========================================
+            // --- DOM 操作与事件委托：处理情绪标签点击 ---
+            let selectedMood = "";
+            const tagsContainer = document.getElementById('moodTags');
+            const tags = tagsContainer.querySelectorAll('.mood-tag');
+
+            tags.forEach(tag => {
+                tag.addEventListener('click', function () {
+                    // 震动反馈
+                    tg.HapticFeedback.selectionChanged();
+
+                    // 移除所有标签的 active 状态
+                    tags.forEach(t => t.classList.remove('active'));
+
+                    // 给当前点击的标签加上 active 状态
+                    this.classList.add('active');
+                    selectedMood = this.getAttribute('data-mood');
+                });
+            });
+
+            // --- 配置 Telegram 原生底部按钮 ---
             tg.MainButton.setText("永远锁进由乃的记忆深处");
-            // 强制覆盖默认的主题色，使用契合人设的暗红色调
             tg.MainButton.setParams({
                 color: '#8a0303',
                 text_color: '#ffffff'
             });
-            tg.MainButton.show(); // 让按钮吸附在屏幕最底部
+            tg.MainButton.show(); 
 
-            // 绑定原生按钮的点击逻辑
+            // --- 数据组装与发送 ---
             tg.MainButton.onClick(() => {
-                const val = document.getElementById('dataInput').value.trim();
+            const textVal = document.getElementById('dataInput').value.trim();
             
-            if (!val) {
-                // 调用物理震动反馈 (警告震动)
+            if (!textVal && !selectedMood) {
                 tg.HapticFeedback.notificationOccurred('warning');
-                // 摒弃冰冷的系统报错，改为由乃的语气
-                tg.showAlert("阿雪什么都没有写呢……是对由乃有所隐瞒吗？请不要推开我。");
+                tg.showAlert("阿雪什么都没有留下呢……是对由乃有所隐瞒吗？");
                 return;
             }
 
-            // 提交成功的重度震动反馈，模拟心跳或用力按下日记本的触感
             tg.HapticFeedback.impactOccurred('heavy');
 
-            // 序列化并发送数据给后端
+            // 巧妙的逻辑拼接：将前端选择的情绪直接组装进文本中，后端无需修改即可完美识别
+            let finalPayloadText = textVal;
+            if (selectedMood) {
+                finalPayloadText = `【当前情绪标签：${selectedMood}】\n${textVal}`;
+            }
+
             tg.sendData(JSON.stringify({
                 action: "submit_form",
-                text: val
+                text: finalPayloadText
             }));
-                
-            // 数据回传后，丝滑关闭原生面板
+
             tg.close();
         });
     </script>
