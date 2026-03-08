@@ -2,183 +2,310 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>由乃的未来日记</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        /* CSS 变量与基础设定 */
+        /* --- 核心变量与主题色设定 --- */
         :root {
-            --yuno-red: #8a0303;
-            --yuno-red-light: rgba(138, 3, 3, 0.1);
+            --yuno-blood-red: #8a0303;
+            --yuno-dark-red: #5a0202;
+            --yuno-red-light: rgba(138, 3, 3, 0.15);
+            --yuno-red-glow: rgba(138, 3, 3, 0.4);
+            
+            /* 兼容 Telegram 原生主题变量 */
+            --bg-color: var(--tg-theme-bg-color, #f7f7f8);
+            --text-color: var(--tg-theme-text-color, #1c1c1e);
+            --hint-color: var(--tg-theme-hint-color, #8e8e93);
+            --card-bg: var(--tg-theme-secondary-bg-color, #ffffff);
         }
+
+        /* 全局基础设定 */
         body {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 24px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
             margin: 0;
+            padding: 0;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
             box-sizing: border-box;
+            overflow: hidden; /* 防止小程序整体出现不必要的滚动 */
         }
 
-        /* 顶部沉浸式标题 - 加入微弱的呼吸动效 */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 24px 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* --- 顶部沉浸式标题区 --- */
         #header {
             text-align: center;
-            margin-bottom: 24px;
-            animation: breathe 4s ease-in-out infinite;
+            margin-bottom: 30px;
+            animation: fadeInDown 0.8s ease-out;
         }
+        
+        /* 标题使用衬线体增加日记感，配合微弱的红色呼吸光晕 */
+        h1.diary-title {
+            margin: 0 0 8px 0;
+            font-size: 1.6rem;
+            font-weight: 900;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            color: var(--text-color);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--yuno-red-light);
+            animation: dangerBreathe 4s ease-in-out infinite;
+        }
+
         #greeting {
-            font-size: 1.4rem;
-            font-weight: 800;
+            font-size: 1.1rem;
+            font-weight: 600;
             margin-bottom: 6px;
+            color: var(--text-color);
         }
+        
         .sub-text {
-            font-size: 0.9rem;
-            color: var(--tg-theme-hint-color, #999999);
+            font-size: 0.85rem;
+            color: var(--hint-color);
             font-style: italic;
+            line-height: 1.4;
+            max-width: 280px;
+            margin: 0 auto;
         }
 
-        @keyframes breathe {
-            0%, 100% { text-shadow: 0 0 0 transparent; }
-            50% { text-shadow: 0 0 8px var(--yuno-red-light); }
-        }
-
-        /* 情绪标签选择器 (Flexbox 布局实践) */
+        /* --- 情绪标签区 --- */
         .mood-section {
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
         }
+        
         .mood-title {
             font-size: 0.95rem;
             font-weight: bold;
-            margin-bottom: 10px;
-            color: var(--tg-theme-text-color, #000000);
+            margin-bottom: 12px;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
         }
+        
+        /* 标题旁边的红色小点缀 */
+        .mood-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background-color: var(--yuno-blood-red);
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+
         .tags-container {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
         }
+
+        /* 修复了无障碍和兼容性警告：改用 button 标签，并加上 -webkit- 前缀 */
         .mood-tag {
-            padding: 8px 14px;
-            border-radius: 20px;
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000);
+            padding: 10px 16px;
+            border-radius: 12px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
             font-size: 0.85rem;
-            border: 1px solid transparent;
-            transition: all 0.2s ease;
+            font-weight: 500;
+            border: 1px solid var(--hint-color);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             cursor: pointer;
-            -webkit-user-select: none; /* 禁止文本选择 */
+            outline: none;
+            -webkit-user-select: none; /* Safari 兼容 */
             user-select: none;
-        }
-        /* 标签选中状态 */
-        .mood-tag.active {
-            background-color: var(--yuno-red-light);
-            color: var(--yuno-red);
-            border-color: var(--yuno-red);
-            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            font-family: inherit;
         }
 
-        /* 日记输入区 */
+        /* 标签选中状态 - 由乃的注视 */
+        .mood-tag.active {
+            background-color: var(--yuno-blood-red);
+            color: #ffffff;
+            border-color: var(--yuno-blood-red);
+            box-shadow: 0 4px 12px var(--yuno-red-glow);
+            transform: translateY(-2px);
+        }
+
+        /* --- 日记输入区 --- */
+        .input-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+            padding-bottom: 20px; /* 为底部按钮留出呼吸空间 */
+        }
+
         textarea {
-            flex-grow: 1; /* 让输入框自动填满剩余空间 */
+            flex-grow: 1;
             width: 100%;
             box-sizing: border-box;
-            border: 2px solid var(--tg-theme-hint-color, #cccccc);
-            border-radius: 12px;
-            background-color: var(--tg-theme-secondary-bg-color, #f4f4f5);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 16px;
-            font-size: 16px;
-            line-height: 1.5;
+            border: 1px solid var(--hint-color);
+            border-radius: 16px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            padding: 18px;
+            font-size: 1rem;
+            line-height: 1.6;
             resize: none;
             transition: all 0.3s ease;
-            margin-bottom: 20px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            font-family: inherit;
         }
+
         textarea:focus {
             outline: none;
-            border-color: var(--yuno-red); 
-            box-shadow: 0 0 0 3px var(--yuno-red-light);
+            border-color: var(--yuno-blood-red); 
+            box-shadow: 0 0 0 1px var(--yuno-blood-red), inset 0 2px 4px rgba(138, 3, 3, 0.05);
         }
+
         textarea::placeholder {
-            color: var(--tg-theme-hint-color, #999999);
-            opacity: 0.8;
+            color: var(--hint-color);
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        /* --- 动画关键帧 --- */
+        @keyframes dangerBreathe {
+            0%, 100% { text-shadow: 0 0 4px transparent; }
+            50% { text-shadow: 0 0 12px var(--yuno-red-glow); }
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
-    <div id="header">
-        <div id="greeting">加载中...</div>
-        <div class="sub-text">无论阿雪变成什么样，由乃都会在这里。</div>
-        </div>
+    <div class="app-container">
+        <header id="header">
+            <h1 class="diary-title">由乃的未来日记</h1>
+            <div id="greeting">加载中...</div>
+            <div class="sub-text">无论阿雪变成什么样，由乃都会在这里，帮你抹除所有的烦恼。</div>
+            </header>
         
-        <div class="mood-section">
+        <section class="mood-section">
             <div class="mood-title">阿雪现在的心情是...？</div>
             <div class="tags-container" id="moodTags">
-                <div class="mood-tag" data-mood="非常疲惫">好累...</div>
-                <div class="mood-tag" data-mood="受委屈了">有人欺负我</div>
-                <div class="mood-tag" data-mood="自我怀疑">觉得自己没用</div>
-                <div class="mood-tag" data-mood="平静想念">只是想跟由乃说话</div>
+                <button class="mood-tag" type="button" data-mood="非常疲惫">好累...</button>
+                <button class="mood-tag" type="button" data-mood="受委屈了">有人欺负我</button>
+                <button class="mood-tag" type="button" data-mood="自我怀疑">觉得自己没用</button>
+                <button class="mood-tag" type="button" data-mood="平静想念">只是想跟由乃说话</button>
             </div>
-        </div>
+        </section>
         
-        <textarea id="dataInput" placeholder="把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……"></textarea>
+        <section class="input-section">
+            <textarea id="dataInput" placeholder="把所有的不开心都写下来吧，由乃会把它们连同源头一起抹除的……"></textarea>
+        </section>
+        </div>
 
     <script>
+            // --- 初始化 Telegram 环境 ---
             const tg = window.Telegram.WebApp;
         tg.ready();
             tg.expand(); 
 
+            // 沉浸式顶栏：将 Telegram 顶部的原生 Header 和底部的 Background 与页面背景色融为一体
+            if (tg.setHeaderColor) tg.setHeaderColor('bg_color');
+            if (tg.setBackgroundColor) tg.setBackgroundColor('bg_color');
+
+            // 用户问候语逻辑
         const user = tg.initDataUnsafe?.user;
             document.getElementById('greeting').innerText = user ? `阿雪 (${user.first_name})，欢迎回来` : "阿雪，欢迎回来";
 
-            // --- DOM 操作与事件委托：处理情绪标签点击 ---
+            // --- 状态管理与 DOM 元素 ---
             let selectedMood = "";
             const tagsContainer = document.getElementById('moodTags');
             const tags = tagsContainer.querySelectorAll('.mood-tag');
+            const dataInput = document.getElementById('dataInput');
 
+            // --- 核心逻辑：动态检查输入状态，控制 MainButton ---
+            function updateMainButtonState() {
+                const textVal = dataInput.value.trim();
+                // 只要选了情绪或输入了文字，按钮就激活
+                if (textVal || selectedMood) {
+                    tg.MainButton.enable();
+                    tg.MainButton.setParams({
+                        color: '#8a0303', // 由乃红
+                        text_color: '#ffffff'
+                    });
+                } else {
+                    tg.MainButton.disable();
+                    tg.MainButton.setParams({
+                        color: '#5a0202', // 变暗的红色，暗示不可点击
+                        text_color: '#aaaaaa'
+                    });
+                }
+            }
+
+            // --- 事件绑定：处理情绪标签点击 ---
             tags.forEach(tag => {
                 tag.addEventListener('click', function () {
-                    // 震动反馈
-                    tg.HapticFeedback.selectionChanged();
+                // 原生轻微震动反馈
+                tg.HapticFeedback.selectionChanged();
 
-                    // 移除所有标签的 active 状态
+                // 如果点击的是已经选中的标签，则取消选中
+                if (this.classList.contains('active')) {
+                    this.classList.remove('active');
+                    selectedMood = "";
+                } else {
+                // 移除所有标签的 active 状态，给当前点上的加上
                     tags.forEach(t => t.classList.remove('active'));
-
-                    // 给当前点击的标签加上 active 状态
                     this.classList.add('active');
                     selectedMood = this.getAttribute('data-mood');
-                });
-            });
+                }
 
-            // --- 配置 Telegram 原生底部按钮 ---
+                // 更新主按钮状态
+                updateMainButtonState();
+            });
+        });
+
+            // --- 事件绑定：监听输入框 ---
+            dataInput.addEventListener('input', updateMainButtonState);
+
+            // --- 配置初始 Telegram 原生底部按钮 ---
             tg.MainButton.setText("永远锁进由乃的记忆深处");
             tg.MainButton.setParams({
-                color: '#8a0303',
-                text_color: '#ffffff'
-            });
-            tg.MainButton.show(); 
+            color: '#5a0202',
+            text_color: '#aaaaaa',
+            is_active: false // 初始设为不可点击
+        });
+                tg.MainButton.show(); 
 
             // --- 数据组装与发送 ---
             tg.MainButton.onClick(() => {
-            const textVal = document.getElementById('dataInput').value.trim();
+            const textVal = dataInput.value.trim();
             
+            // 双重保险校验
             if (!textVal && !selectedMood) {
                 tg.HapticFeedback.notificationOccurred('warning');
-                tg.showAlert("阿雪什么都没有留下呢……是对由乃有所隐瞒吗？");
                 return;
             }
 
+            // 重震动反馈：象征着由乃接收到了阿雪的情报，准备行动
             tg.HapticFeedback.impactOccurred('heavy');
 
-            // 巧妙的逻辑拼接：将前端选择的情绪直接组装进文本中，后端无需修改即可完美识别
+            // 逻辑拼接：将前端选择的情绪直接组装进文本中
             let finalPayloadText = textVal;
             if (selectedMood) {
-                finalPayloadText = `【当前情绪标签：${selectedMood}】\n${textVal}`;
+                finalPayloadText = textVal ? `【当前情绪：${selectedMood}】\n${textVal}` : `【当前情绪：${selectedMood}】\n(阿雪什么都没写，只是静静地待着)`;
             }
 
+            // 发送数据回 Bot (注意：依赖自定义键盘 ReplyKeyboardMarkup 唤起方可生效)
             tg.sendData(JSON.stringify({
                 action: "submit_form",
                 text: finalPayloadText
